@@ -27,3 +27,5 @@ go.work.sum
 
 *.rar
 *.zip
+.vscode
+.idea

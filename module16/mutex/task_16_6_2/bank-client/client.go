@@ -3,7 +3,6 @@ package bankclient
 import (
 	"bufio"
 	"fmt"
-	"math/rand"
 	"os"
 	"strconv"
 	"strings"
@@ -17,14 +16,13 @@ var (
 	ErrWrongOperation  = fmt.Errorf("неверная операция. Доступные операции: balance, deposit, withdrawal, exit")
 	ErrWrongBankClient = fmt.Errorf("клиент не является типом *Client")
 	ErrWrongAmount     = fmt.Errorf("неверная сумма")
-	ErrWrongRange      = fmt.Errorf("неверный диапазон минимального и максимального значения суммы")
 )
 
 // BankClient - интерфейс клиента
 type BankClient interface {
-	// Пополнение депозита на указанную сумму
+	// Deposit Пополнение депозита на указанную сумму
 	Deposit(amount int)
-	// Снятие указанной суммы со счета клиента.
+	// Withdrawal Снятие указанной суммы со счета клиента.
 	// возвращает ошибку, если баланс клиента меньше суммы снятия
 	Withdrawal(amount int) error
 	// Balance возвращает баланс клиента
@@ -71,7 +69,7 @@ func (c *Client) Balance() int {
 	return c.balance
 }
 
-func (c *Client) ExecuteOperation(minVal, maxVal int) {
+func (c *Client) ExecuteOperation() {
 	reader := bufio.NewReader(os.Stdin)
 
 	fmt.Print("Доступные операции: \n" +
@@ -133,17 +131,4 @@ func readAmount(reader *bufio.Reader) (int, error) {
 	}
 
 	return amount, nil
-}
-
-// RandomAmount - генерирует случайную сумму средств
-func RandomAmount(minVal, maxVal int) int {
-	if minVal >= maxVal {
-		fmt.Println(ErrWrongRange)
-
-		return 0
-	}
-
-	amount := rand.Intn(maxVal-minVal+1) + minVal
-
-	return amount
 }

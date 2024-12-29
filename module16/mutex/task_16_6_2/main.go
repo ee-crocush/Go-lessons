@@ -8,13 +8,12 @@ import (
 	"time"
 )
 
-var ErrWrongRange = fmt.Errorf("неверный диапазон минимального и максимального значения суммы")
-
 func init() {
-	rand.Seed(time.Now().UnixNano())
+	rand.New(rand.NewSource(time.Now().UnixNano()))
 }
 
 func RandomAmount(minVal, maxVal int) int {
+	var ErrWrongRange = fmt.Errorf("неверный диапазон минимального и максимального значения суммы")
 	if minVal >= maxVal {
 		fmt.Println(ErrWrongRange)
 		return 0
@@ -42,7 +41,7 @@ func main() {
 
 		go func() {
 			defer wg.Done()
-			realClient.ExecuteOperation(minDeposit, maxDeposit)
+			realClient.ExecuteOperation()
 		}()
 	} else {
 		fmt.Println(bankclient.ErrWrongBankClient)
