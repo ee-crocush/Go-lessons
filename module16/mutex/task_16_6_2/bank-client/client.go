@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"math/rand"
 	"os"
+	"strconv"
 	"strings"
 	"sync"
-	"time"
 )
 
 var _ BankClient = &Client{}
@@ -19,10 +19,6 @@ var (
 	ErrWrongAmount     = fmt.Errorf("неверная сумма")
 	ErrWrongRange      = fmt.Errorf("неверный диапазон минимального и максимального значения суммы")
 )
-
-func init() {
-	rand.Seed(time.Now().UnixNano()) // необходимо для того, чтобы рандом был похож на рандомный
-}
 
 // BankClient - интерфейс клиента
 type BankClient interface {
@@ -47,9 +43,9 @@ type Client struct {
 
 // Deposit - пополнение депозита
 func (c *Client) Deposit(amount int) {
-	c.mu.RLock()
+	c.mu.Lock()
 	c.balance += amount
-	c.mu.RUnlock()
+	c.mu.Unlock()
 }
 
 // Withdrawal - снятие денег
@@ -92,13 +88,28 @@ func (c *Client) ExecuteOperation(minVal, maxVal int) {
 
 		switch input {
 		case "deposit":
-			amount := randomAmount(minVal, maxVal)
+			amount, err := readAmount(reader)
+
+			if err != nil {
+				fmt.Println(err)
+				continue
+			}
 			c.Deposit(amount)
 			fmt.Printf("Зачисление средств на счет: %d\n", amount)
 		case "withdrawal":
-			amount := randomAmount(minVal, maxVal)
-			c.Withdrawal(amount)
-			fmt.Printf("Снятие средств со счета: %d\n", amount)
+			amount, err := readAmount(reader)
+
+			if err != nil {
+				fmt.Println(err)
+				continue
+			}
+			err = c.Withdrawal(amount)
+
+			if err != nil {
+				fmt.Println(err)
+			} else {
+				fmt.Printf("Снятие средств со счета: %d\n", amount)
+			}
 		case "balance":
 			c.Balance()
 		case "exit":
@@ -110,8 +121,22 @@ func (c *Client) ExecuteOperation(minVal, maxVal int) {
 	}
 }
 
-// randomAmount - генерирует случайную сумму средств
-func randomAmount(minVal, maxVal int) int {
+func readAmount(reader *bufio.Reader) (int, error) {
+	fmt.Print("Введите сумму операции: ")
+
+	input, _ := reader.ReadString('\n')
+	input = strings.TrimSpace(input) // Убираем пробелы и символы новой строки
+	amount, err := strconv.Atoi(input)
+
+	if err != nil {
+		return 0, ErrWrongAmount
+	}
+
+	return amount, nil
+}
+
+// RandomAmount - генерирует случайную сумму средств
+func RandomAmount(minVal, maxVal int) int {
 	if minVal >= maxVal {
 		fmt.Println(ErrWrongRange)
 

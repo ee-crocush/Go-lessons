@@ -11,13 +11,12 @@ import (
 var ErrWrongRange = fmt.Errorf("неверный диапазон минимального и максимального значения суммы")
 
 func init() {
-	rand.Seed(time.Now().UnixNano()) // необходимо для того, чтобы рандом был похож на рандомный
+	rand.Seed(time.Now().UnixNano())
 }
 
-func randomAmount(minVal, maxVal int) int {
+func RandomAmount(minVal, maxVal int) int {
 	if minVal >= maxVal {
 		fmt.Println(ErrWrongRange)
-
 		return 0
 	}
 
@@ -43,7 +42,6 @@ func main() {
 
 		go func() {
 			defer wg.Done()
-
 			realClient.ExecuteOperation(minDeposit, maxDeposit)
 		}()
 	} else {
@@ -54,16 +52,13 @@ func main() {
 	for i := 0; i < 10; i++ {
 		wg.Add(1)
 
-		go func() {
+		go func(i int) {
 			defer wg.Done()
-
-			amount := randomAmount(minDeposit, maxDeposit)
-
-			client.Deposit(amount)
-
+			amount := RandomAmount(minDeposit, maxDeposit)
 			// Задержка между пополнением от 0.5 с до 1 с
-			time.Sleep(time.Duration(rand.Intn(500)+500) * time.Millisecond)
-		}()
+			time.Sleep(time.Duration(i*rand.Intn(500)+500) * time.Millisecond)
+			client.Deposit(amount)
+		}(i)
 	}
 
 	// Запускаем 5 горутин для уменьшения баланса
@@ -72,23 +67,16 @@ func main() {
 
 		go func() {
 			defer wg.Done()
-
-			amount := randomAmount(minWithdrawal, maxWithdrawal)
+			amount := RandomAmount(minWithdrawal, maxWithdrawal)
+			// Задержка между пополнением от 0.5 с до 1 с
+			time.Sleep(time.Duration(5*rand.Intn(500)+500) * time.Millisecond)
 
 			err := client.Withdrawal(amount)
-
 			if err != nil {
 				fmt.Println(err)
 			}
-
-			// Задержка между пополнением от 0.5 с до 1 с
-			time.Sleep(time.Duration(rand.Intn(500)+500) * time.Millisecond)
 		}()
 	}
 
-	// for {
-
 	wg.Wait()
-	// }
-
 }
