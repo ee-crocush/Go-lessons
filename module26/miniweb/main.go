@@ -16,7 +16,7 @@ func main() {
 }
 
 func GetTime(w http.ResponseWriter, r *http.Request) {
-	log.Printf("Request from: %s\n", r.Referer())
+	log.Printf("Request from: %s\n", r.RemoteAddr)
 	_, err := fmt.Fprintf(w, "<h1>%s</h1><br>", "Запуск приложения в контейнере Docker")
 	if err != nil {
 		log.Printf("Error: %s\n", err)
