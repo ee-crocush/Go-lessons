@@ -25,9 +25,4 @@ go.work.sum
 # env file
 .env
 
-*.txt
-*.rar
-*.zip
-.vscode
-.idea.qodo
 .idea
