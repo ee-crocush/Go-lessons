@@ -1,0 +1,21 @@
+database:
+  host: ${DB_HOST}
+  port: ${DB_PORT}
+  user: ${DB_USER}
+  password: ${DB_PASSWORD}
+  name: ${DB_NAME}
+  migrations: ./migrations
+  sslmode: disable
+  pool_max_conns: 20
+  pool_min_conns: 5
+  pool_max_conn_lifetime: 1h
+  pool_max_conn_idle_time: 30m
+  connect_timeout: 10s
+
+mongodb:
+  host: ${MONGO_HOST}
+  port: ${MONGO_PORT}
+  user: ${MONGO_USER}
+  password: ${MONGO_PASSWORD}
+  auth_source: ${MONGO_AUTH_SOURCE}
+  name: ${MONGO_DB_NAME}

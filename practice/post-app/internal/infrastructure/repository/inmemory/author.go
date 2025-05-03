@@ -11,17 +11,17 @@ import (
 var _ dom.Repository = (*AuthorRepository)(nil)
 
 // AuthorRepository представляет БД авторов в памяти.
-// Предполагам, что авторов будет не будет много. Поэтому не используем map для хранения данных
+// Предполагаем, что авторов будет не будет много. Поэтому не используем map для хранения данных
 type AuthorRepository struct {
-	mu     sync.RWMutex
-	lastID int32
-	items  []*dom.Author
+	mu      sync.RWMutex
+	lastID  int32
+	authors []*dom.Author
 }
 
 // NewAuthorRepository создает новый репозиторий авторов.
 func NewAuthorRepository() *AuthorRepository {
 	return &AuthorRepository{
-		items: make([]*dom.Author, 0),
+		authors: make([]*dom.Author, 0),
 	}
 }
 
@@ -38,7 +38,7 @@ func (r *AuthorRepository) Create(ctx context.Context, author *dom.Author) error
 	}
 
 	author.SetID(authorID)
-	r.items = append(r.items, author)
+	r.authors = append(r.authors, author)
 
 	return nil
 }
@@ -50,7 +50,7 @@ func (r *AuthorRepository) FindByID(ctx context.Context, id dom.AuthorID) (*dom.
 
 	r.lastID++
 
-	for _, a := range r.items {
+	for _, a := range r.authors {
 		if a.ID() == id {
 			return a, nil
 		}
@@ -64,9 +64,9 @@ func (r *AuthorRepository) Save(ctx context.Context, author *dom.Author) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	for i, a := range r.items {
+	for i, a := range r.authors {
 		if a.ID() == author.ID() {
-			r.items[i] = author
+			r.authors[i] = author
 			return nil
 		}
 	}

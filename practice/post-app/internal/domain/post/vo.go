@@ -4,11 +4,11 @@ import "time"
 
 // PostID идентификатор поста.
 type PostID struct {
-	value int
+	value int32
 }
 
 // NewPostID создает новый идентификатор поста.
-func NewPostID(id int) (PostID, error) {
+func NewPostID(id int32) (PostID, error) {
 	if id < 1 {
 		return PostID{}, ErrInvalidPostID
 	}
@@ -16,7 +16,7 @@ func NewPostID(id int) (PostID, error) {
 }
 
 // Value возвращает значение идентификатора.
-func (t PostID) Value() int { return t.value }
+func (t PostID) Value() int32 { return t.value }
 
 // PostTitle титул поста.
 type PostTitle struct {
@@ -65,13 +65,6 @@ func NewTimestamp() Timestamp {
 // FromUnixSeconds создаёт Timestamp из секунд
 func FromUnixSeconds(s int64) Timestamp {
 	return Timestamp{value: time.Unix(s, 0)}
-}
-
-func FromUnixSecondsPtr(s *int64) *Timestamp {
-	if s == nil {
-		return nil
-	}
-	return &Timestamp{value: time.Unix(*s, 0)}
 }
 
 // Time возвращает значение временной метки.
