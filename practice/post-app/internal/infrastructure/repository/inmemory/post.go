@@ -55,7 +55,7 @@ func (r *PostRepository) FindByID(ctx context.Context, id dom.PostID) (*dom.Post
 }
 
 // FindByAuthorID находит пост по автору.
-func (r *PostRepository) FindByAuthorID(ctx context.Context, authorID author.AuthorID) []*dom.Post {
+func (r *PostRepository) FindByAuthorID(ctx context.Context, authorID author.AuthorID) ([]*dom.Post, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 
@@ -66,11 +66,15 @@ func (r *PostRepository) FindByAuthorID(ctx context.Context, authorID author.Aut
 		}
 	}
 
-	return result
+	if len(result) == 0 {
+		return nil, fmt.Errorf("PostRepository.FindByAuthorID: %v", dom.ErrPostNotFound)
+	}
+
+	return result, nil
 }
 
 // FindAll находит все посты.
-func (r *PostRepository) FindAll(ctx context.Context) []*dom.Post {
+func (r *PostRepository) FindAll(ctx context.Context) ([]*dom.Post, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 
@@ -79,7 +83,11 @@ func (r *PostRepository) FindAll(ctx context.Context) []*dom.Post {
 		result = append(result, p)
 	}
 
-	return result
+	if len(result) == 0 {
+		return nil, fmt.Errorf("PostRepository.FindByAuthorID: %v", dom.ErrPostNotFound)
+	}
+
+	return result, nil
 }
 
 // Save обновляет пост.
