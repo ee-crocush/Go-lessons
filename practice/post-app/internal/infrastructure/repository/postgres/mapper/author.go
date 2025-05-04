@@ -4,6 +4,7 @@ package mapper
 import (
 	"fmt"
 	dom "post-app/internal/domain/author"
+	"post-app/internal/domain/vo"
 )
 
 // AuthorRow - структура для маппинга авторов из БД.
@@ -14,7 +15,7 @@ type AuthorRow struct {
 
 // MapRowToAuthor - функция маппинга авторов из БД.
 func MapRowToAuthor(row AuthorRow) (*dom.Author, error) {
-	authorID, err := dom.NewAuthorID(row.ID)
+	authorID, err := vo.NewAuthorID(row.ID)
 	if err != nil {
 		return nil, fmt.Errorf("AuthorRow.MapRowToAuthor: %w", err)
 	}

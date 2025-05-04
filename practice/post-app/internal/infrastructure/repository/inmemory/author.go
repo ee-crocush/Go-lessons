@@ -5,58 +5,75 @@ import (
 	"context"
 	"fmt"
 	dom "post-app/internal/domain/author"
+	"post-app/internal/domain/vo"
 	"sync"
 )
 
 var _ dom.Repository = (*AuthorRepository)(nil)
 
 // AuthorRepository представляет БД авторов в памяти.
-// Предполагаем, что авторов будет не будет много. Поэтому не используем map для хранения данных
 type AuthorRepository struct {
 	mu      sync.RWMutex
 	lastID  int32
-	authors []*dom.Author
+	authors map[vo.AuthorID]*dom.Author
 }
 
 // NewAuthorRepository создает новый репозиторий авторов.
 func NewAuthorRepository() *AuthorRepository {
 	return &AuthorRepository{
-		authors: make([]*dom.Author, 0),
+		authors: make(map[vo.AuthorID]*dom.Author),
 	}
 }
 
 // Create сохраняет нового автора.
-func (r *AuthorRepository) Create(ctx context.Context, author *dom.Author) error {
+func (r *AuthorRepository) Create(ctx context.Context, author *dom.Author) (vo.AuthorID, error) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
 	r.lastID++
 
-	authorID, err := dom.NewAuthorID(r.lastID)
+	authorID, err := vo.NewAuthorID(r.lastID)
 	if err != nil {
-		return fmt.Errorf("AuthorRepository.Create: %v", err)
+		return vo.AuthorID{}, fmt.Errorf("AuthorRepository.Create: %v", err)
 	}
 
 	author.SetID(authorID)
-	r.authors = append(r.authors, author)
+	r.authors[authorID] = author
 
-	return nil
+	return authorID, nil
 }
 
 // FindByID находит автора по его ID.
-func (r *AuthorRepository) FindByID(ctx context.Context, id dom.AuthorID) (*dom.Author, error) {
+func (r *AuthorRepository) FindByID(ctx context.Context, id vo.AuthorID) (*dom.Author, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 
-	r.lastID++
-
-	for _, a := range r.authors {
-		if a.ID() == id {
-			return a, nil
-		}
+	author, ok := r.authors[id]
+	if !ok {
+		return nil, fmt.Errorf("PostRepository.FindByID: %v", dom.ErrAuthorNotFound)
 	}
 
-	return nil, fmt.Errorf("AuthorRepository.FindByID: %v", dom.ErrAuthorNotFound)
+	return author, nil
+}
+
+// FindByIDs находит авторов по их ID.
+func (r *AuthorRepository) FindByIDs(ctx context.Context, ids []vo.AuthorID) ([]*dom.Author, error) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
+	var result []*dom.Author
+
+	for _, id := range ids {
+		// Здесь не нужна проверка, что какого-то автора нет
+		author, _ := r.authors[id]
+		result = append(result, author)
+	}
+
+	if len(result) == 0 {
+		return nil, fmt.Errorf("PostRepository.FindByAuthorID: %v", dom.ErrAuthorNotFound)
+	}
+
+	return result, nil
 }
 
 // Save сохраняет изменения в существующем авторе.

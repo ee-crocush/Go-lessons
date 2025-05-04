@@ -4,6 +4,7 @@ package mapper
 import (
 	"fmt"
 	dom "post-app/internal/domain/author"
+	"post-app/internal/domain/vo"
 )
 
 // AuthorDocument - структура для маппинга авторов из Mongo.
@@ -14,7 +15,7 @@ type AuthorDocument struct {
 
 // MapDocToAuthor - функция маппинга авторов из БД.
 func MapDocToAuthor(doc AuthorDocument) (*dom.Author, error) {
-	authorID, err := dom.NewAuthorID(doc.ID)
+	authorID, err := vo.NewAuthorID(doc.ID)
 	if err != nil {
 		return nil, fmt.Errorf("AuthorDocument.MapDocToAuthor: %w", err)
 	}

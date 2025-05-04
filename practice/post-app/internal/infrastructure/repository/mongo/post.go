@@ -6,8 +6,8 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"post-app/internal/domain/author"
 	dom "post-app/internal/domain/post"
+	"post-app/internal/domain/vo"
 	"post-app/internal/infrastructure/repository/mongo/mapper"
 	"time"
 )
@@ -73,7 +73,7 @@ func (r *PostRepository) FindByID(ctx context.Context, id dom.PostID) (*dom.Post
 }
 
 // FindByAuthorID находит все посты автора по его ID.
-func (r *PostRepository) FindByAuthorID(ctx context.Context, authorID author.AuthorID) ([]*dom.Post, error) {
+func (r *PostRepository) FindByAuthorID(ctx context.Context, authorID vo.AuthorID) ([]*dom.Post, error) {
 	ctx, cancel := context.WithTimeout(ctx, r.timeout)
 	defer cancel()
 

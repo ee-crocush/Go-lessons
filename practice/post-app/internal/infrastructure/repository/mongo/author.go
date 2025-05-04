@@ -7,6 +7,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	dom "post-app/internal/domain/author"
+	"post-app/internal/domain/vo"
 	"post-app/internal/infrastructure/repository/mongo/mapper"
 	"time"
 )
@@ -30,18 +31,18 @@ func NewAuthorRepository(db *mongo.Database, timeout time.Duration) *AuthorRepos
 }
 
 // Create добавляет нового автора в БД.
-func (r *AuthorRepository) Create(ctx context.Context, author *dom.Author) error {
+func (r *AuthorRepository) Create(ctx context.Context, author *dom.Author) (vo.AuthorID, error) {
 	ctx, cancel := context.WithTimeout(ctx, r.timeout)
 	defer cancel()
 
 	id, err := r.getNextID(ctx)
 	if err != nil {
-		return fmt.Errorf("AuthorRepository.Create: %w", err)
+		return vo.AuthorID{}, fmt.Errorf("AuthorRepository.Create: %w", err)
 	}
 
-	authorID, err := dom.NewAuthorID(id)
+	authorID, err := vo.NewAuthorID(id)
 	if err != nil {
-		return fmt.Errorf("AuthorRepository.Create: %w", err)
+		return vo.AuthorID{}, fmt.Errorf("AuthorRepository.Create: %w", err)
 	}
 
 	author.SetID(authorID)
@@ -50,14 +51,14 @@ func (r *AuthorRepository) Create(ctx context.Context, author *dom.Author) error
 
 	_, err = r.collection.InsertOne(ctx, doc)
 	if err != nil {
-		return fmt.Errorf("AuthorRepository.Create: %w", err)
+		return vo.AuthorID{}, fmt.Errorf("AuthorRepository.Create: %w", err)
 	}
 
-	return nil
+	return authorID, nil
 }
 
 // FindByID находит автора по его ID.
-func (r *AuthorRepository) FindByID(ctx context.Context, id dom.AuthorID) (*dom.Author, error) {
+func (r *AuthorRepository) FindByID(ctx context.Context, id vo.AuthorID) (*dom.Author, error) {
 	ctx, cancel := context.WithTimeout(ctx, r.timeout)
 	defer cancel()
 
@@ -69,6 +70,20 @@ func (r *AuthorRepository) FindByID(ctx context.Context, id dom.AuthorID) (*dom.
 	}
 
 	return mapper.MapDocToAuthor(doc)
+}
+
+// FindByIDs находит авторов по их ID.
+func (r *AuthorRepository) FindByIDs(ctx context.Context, ids []vo.AuthorID) ([]*dom.Author, error) {
+	ctx, cancel := context.WithTimeout(ctx, r.timeout)
+	defer cancel()
+
+	cursor, err := r.collection.Find(ctx, bson.M{"_id": bson.M{"$in": ids}})
+	if err != nil {
+		return nil, fmt.Errorf("AuthorRepository.FindAll: %w", err)
+	}
+	defer cursor.Close(ctx)
+
+	return r.decodeManyAuthors(ctx, cursor)
 }
 
 // Save сохраняет изменения в существующем авторе.
@@ -101,4 +116,29 @@ func (r *AuthorRepository) getNextID(ctx context.Context) (int32, error) {
 		return 0, fmt.Errorf("getNextID: %w", err)
 	}
 	return result.Seq, nil
+}
+
+// decodeManyAuthors декодирует курсор в массив авторов.
+func (r *AuthorRepository) decodeManyAuthors(ctx context.Context, cursor *mongo.Cursor) ([]*dom.Author, error) {
+	var authors []*dom.Author
+
+	for cursor.Next(ctx) {
+		var doc mapper.AuthorDocument
+		if err := cursor.Decode(&doc); err != nil {
+			return nil, fmt.Errorf("AuthorRepository.decodeManyPosts: %w", err)
+		}
+
+		author, err := mapper.MapDocToAuthor(doc)
+		if err != nil {
+			return nil, fmt.Errorf("AuthorRepository.decodeManyPosts: %w", err)
+		}
+
+		authors = append(authors, author)
+	}
+
+	if err := cursor.Err(); err != nil {
+		return nil, fmt.Errorf("AuthorRepository.decodeManyPosts: %w", err)
+	}
+
+	return authors, nil
 }

@@ -2,7 +2,7 @@ package post
 
 import (
 	"context"
-	"post-app/internal/domain/author"
+	"post-app/internal/domain/vo"
 )
 
 // Creator представляет контракт для создания поста.
@@ -13,7 +13,7 @@ type Creator interface {
 // Finder представляет контракт для получения поста.
 type Finder interface {
 	FindByID(ctx context.Context, id PostID) (*Post, error)
-	FindByAuthorID(ctx context.Context, authorID author.AuthorID) ([]*Post, error)
+	FindByAuthorID(ctx context.Context, authorID vo.AuthorID) ([]*Post, error)
 	FindAll(ctx context.Context) ([]*Post, error)
 }
 

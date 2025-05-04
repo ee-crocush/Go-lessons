@@ -2,8 +2,8 @@ package mapper
 
 import (
 	"fmt"
-	"post-app/internal/domain/author"
 	dom "post-app/internal/domain/post"
+	"post-app/internal/domain/vo"
 )
 
 // PostRow - структура для маппинга постов из БД.
@@ -22,7 +22,7 @@ func MapRowToPost(row PostRow) (*dom.Post, error) {
 		return nil, fmt.Errorf("PostRow.MapRowToPost: %w", err)
 	}
 
-	authorID, err := author.NewAuthorID(row.AuthorID)
+	authorID, err := vo.NewAuthorID(row.AuthorID)
 	if err != nil {
 		return nil, fmt.Errorf("PostRow.MapRowToPost: %w", err)
 	}
@@ -39,5 +39,5 @@ func MapRowToPost(row PostRow) (*dom.Post, error) {
 
 	createdAt := dom.FromUnixSeconds(row.CreatedAt)
 
-	return dom.RehydratePost(id, authorID, title, content, createdAt), nil
+	return dom.RehydratePost(id, authorID, title, content, &createdAt), nil
 }

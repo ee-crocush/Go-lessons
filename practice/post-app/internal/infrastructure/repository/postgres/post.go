@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
-	"post-app/internal/domain/author"
 	dom "post-app/internal/domain/post"
+	"post-app/internal/domain/vo"
 	"post-app/internal/infrastructure/repository/postgres/mapper"
 )
 
@@ -56,7 +56,7 @@ func (r *PostRepository) FindByID(ctx context.Context, id dom.PostID) (*dom.Post
 }
 
 // FindByAuthorID находит все посты автора в базе данных по его идентификатору.
-func (r *PostRepository) FindByAuthorID(ctx context.Context, authorID author.AuthorID) ([]*dom.Post, error) {
+func (r *PostRepository) FindByAuthorID(ctx context.Context, authorID vo.AuthorID) ([]*dom.Post, error) {
 	const query = `SELECT id, author_id, title, content, created_at FROM posts WHERE id=$1`
 
 	return r.fetchPosts(ctx, query, authorID.Value())

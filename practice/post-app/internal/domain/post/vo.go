@@ -18,6 +18,9 @@ func NewPostID(id int32) (PostID, error) {
 // Value возвращает значение идентификатора.
 func (t PostID) Value() int32 { return t.value }
 
+// Equal сравнивает два идентификатора.
+func (t PostID) Equal(other PostID) bool { return t.value == other.value }
+
 // PostTitle титул поста.
 type PostTitle struct {
 	value string

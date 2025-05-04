@@ -3,8 +3,8 @@ package inmemory
 import (
 	"context"
 	"fmt"
-	"post-app/internal/domain/author"
 	dom "post-app/internal/domain/post"
+	"post-app/internal/domain/vo"
 	"sync"
 )
 
@@ -46,16 +46,16 @@ func (r *PostRepository) FindByID(ctx context.Context, id dom.PostID) (*dom.Post
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 
-	p, ok := r.posts[id]
+	post, ok := r.posts[id]
 	if !ok {
 		return nil, fmt.Errorf("PostRepository.FindByID: %v", dom.ErrPostNotFound)
 	}
 
-	return p, nil
+	return post, nil
 }
 
 // FindByAuthorID находит пост по автору.
-func (r *PostRepository) FindByAuthorID(ctx context.Context, authorID author.AuthorID) ([]*dom.Post, error) {
+func (r *PostRepository) FindByAuthorID(ctx context.Context, authorID vo.AuthorID) ([]*dom.Post, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 
@@ -84,7 +84,7 @@ func (r *PostRepository) FindAll(ctx context.Context) ([]*dom.Post, error) {
 	}
 
 	if len(result) == 0 {
-		return nil, fmt.Errorf("PostRepository.FindByAuthorID: %v", dom.ErrPostNotFound)
+		return nil, fmt.Errorf("PostRepository.FindAll: %v", dom.ErrPostNotFound)
 	}
 
 	return result, nil

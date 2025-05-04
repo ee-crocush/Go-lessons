@@ -2,8 +2,8 @@ package mapper
 
 import (
 	"fmt"
-	"post-app/internal/domain/author"
 	dom "post-app/internal/domain/post"
+	"post-app/internal/domain/vo"
 )
 
 // PostDocument - структура для маппинга постов из Mongo.
@@ -22,7 +22,7 @@ func MapDocToPost(doc PostDocument) (*dom.Post, error) {
 		return nil, fmt.Errorf("PostDocument.MapDocToPost: %w", err)
 	}
 
-	authorID, err := author.NewAuthorID(doc.PostID)
+	authorID, err := vo.NewAuthorID(doc.PostID)
 	if err != nil {
 		return nil, fmt.Errorf("PostDocument.MapDocToPost: %w", err)
 	}
@@ -39,7 +39,7 @@ func MapDocToPost(doc PostDocument) (*dom.Post, error) {
 
 	createdAt := dom.FromUnixSeconds(doc.CreatedAt)
 
-	return dom.RehydratePost(id, authorID, title, content, createdAt), nil
+	return dom.RehydratePost(id, authorID, title, content, &createdAt), nil
 }
 
 // FromPostToDoc маппинг доменной модели поста в MongoDB-документ.

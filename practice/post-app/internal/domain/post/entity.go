@@ -3,20 +3,20 @@ package post
 
 import (
 	"fmt"
-	"post-app/internal/domain/author"
+	"post-app/internal/domain/vo"
 )
 
 // Post представляет пост.
 type Post struct {
 	id        PostID
-	authorID  author.AuthorID
+	authorID  vo.AuthorID
 	title     PostTitle
 	content   PostContent
 	createdAt Timestamp
 }
 
 // NewPost создает новый пост.
-func NewPost(authorID author.AuthorID, title, content string) (*Post, error) {
+func NewPost(authorID vo.AuthorID, title, content string) (*Post, error) {
 	postTitle, err := NewPostTitle(title)
 	if err != nil {
 		return nil, fmt.Errorf("NewPost.NewPostTitle: %w", err)
@@ -39,7 +39,7 @@ func NewPost(authorID author.AuthorID, title, content string) (*Post, error) {
 func (p *Post) ID() PostID { return p.id }
 
 // AuthorID возвращает идентификатор автора поста.
-func (p *Post) AuthorID() author.AuthorID { return p.authorID }
+func (p *Post) AuthorID() vo.AuthorID { return p.authorID }
 
 // Title возвращает заголовок поста.
 func (p *Post) Title() PostTitle { return p.title }
@@ -52,14 +52,14 @@ func (p *Post) CreatedAt() Timestamp { return p.createdAt }
 
 // RehydratePost — вспомогательный конструктор для «восстановления» сущности из БД.
 func RehydratePost(
-	id PostID, authorID author.AuthorID, title PostTitle, content PostContent, createdAt Timestamp,
+	id PostID, authorID vo.AuthorID, title PostTitle, content PostContent, createdAt *Timestamp,
 ) *Post {
 	return &Post{
 		id:        id,
 		authorID:  authorID,
 		title:     title,
 		content:   content,
-		createdAt: createdAt,
+		createdAt: *createdAt,
 	}
 }
 
