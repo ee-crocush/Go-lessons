@@ -39,7 +39,7 @@ func MapDocToPost(doc PostDocument) (*dom.Post, error) {
 
 	createdAt := dom.FromUnixSeconds(doc.CreatedAt)
 
-	return dom.RehydratePost(id, authorID, title, content, &createdAt), nil
+	return dom.RehydratePost(id, authorID, title, content, createdAt), nil
 }
 
 // FromPostToDoc маппинг доменной модели поста в MongoDB-документ.

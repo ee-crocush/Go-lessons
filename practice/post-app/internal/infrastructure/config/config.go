@@ -10,6 +10,14 @@ import (
 	"time"
 )
 
+// AppConfig - конфигурация приложения.
+type AppConfig struct {
+	Name         string `yaml:"name"`
+	ReadTimeout  int    `yaml:"read_timeout"`
+	WriteTimeout int    `yaml:"write_timeout"`
+	DBType       string `yaml:"db_type"`
+}
+
 // DBConfig конфигурация базы данных.
 type DBConfig struct {
 	Host                string        `yaml:"host" validate:"required"`
@@ -60,19 +68,36 @@ func (c *MongoConfig) URI() *url.URL {
 	}
 }
 
+// HTTPConfig - конфигурация HTTP сервера.
+type HTTPConfig struct {
+	Host    string `yaml:"host" validate:"required"`
+	Port    int    `yaml:"port" validate:"required"`
+	Enabled bool   `yaml:"enabled" validate:"required"`
+}
+
+// LoggingConfig - конфигурация логирования.
+type LoggingConfig struct {
+	Level          string `yaml:"level"`
+	Format         string `yaml:"format"`
+	EnableHTTPLogs bool   `yaml:"enable_http_logs"`
+}
+
 // Config основная конфигурация.
 type Config struct {
-	DB      DBConfig    `yaml:"database"`
-	MongoDB MongoConfig `yaml:"mongodb"`
+	App     AppConfig     `yaml:"app"`
+	HTTP    HTTPConfig    `yaml:"http"`
+	DB      DBConfig      `yaml:"database"`
+	MongoDB MongoConfig   `yaml:"mongodb"`
+	Logging LoggingConfig `yaml:"logging"`
 }
 
 // LoadConfig загрузка конфига из файла.
-func LoadConfig(configPath string) (*Config, error) {
+func LoadConfig(configPath string) (Config, error) {
 	_ = godotenv.Load()
 
 	raw, err := os.ReadFile(configPath)
 	if err != nil {
-		return nil, fmt.Errorf("read config file: %w", err)
+		return Config{}, fmt.Errorf("read config file: %w", err)
 	}
 
 	// Подставляем переменные окружения
@@ -81,13 +106,13 @@ func LoadConfig(configPath string) (*Config, error) {
 	// Парсим YAML
 	var cfg Config
 	if err := yaml.Unmarshal([]byte(expanded), &cfg); err != nil {
-		return nil, fmt.Errorf("parse config yaml: %w", err)
+		return Config{}, fmt.Errorf("parse config yaml: %w", err)
 	}
 	if err = cfg.Validate(); err != nil {
-		return nil, fmt.Errorf("config validation failed: %w", err)
+		return Config{}, fmt.Errorf("config validation failed: %w", err)
 	}
 
-	return &cfg, nil
+	return cfg, nil
 }
 
 // Validate валидация конфига.

@@ -61,18 +61,23 @@ func (r *AuthorRepository) FindByIDs(ctx context.Context, ids []vo.AuthorID) ([]
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 
-	var result []*dom.Author
+	// Используем map для исключения дубликатов
+	uniqueAuthors := make(map[vo.AuthorID]*dom.Author)
 
 	for _, id := range ids {
-		// Здесь не нужна проверка, что какого-то автора нет
-		author, _ := r.authors[id]
+		if author, exists := r.authors[id]; exists {
+			uniqueAuthors[id] = author
+		}
+	}
+
+	var result []*dom.Author
+	for _, author := range uniqueAuthors {
 		result = append(result, author)
 	}
 
 	if len(result) == 0 {
 		return nil, fmt.Errorf("PostRepository.FindByAuthorID: %v", dom.ErrAuthorNotFound)
 	}
-
 	return result, nil
 }
 

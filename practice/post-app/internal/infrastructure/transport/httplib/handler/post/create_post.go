@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 	uc "post-app/internal/usecase/post"
+	"post-app/pkg/utils"
 )
 
 // CreatePostRequest входные данные для создания поста из запроса.
@@ -34,7 +35,14 @@ func (h *Handler) CreatePostHandler(w http.ResponseWriter, r *http.Request) {
 		Content:  req.Content,
 	}
 	if err := h.createUC.Execute(r.Context(), in); err != nil {
-		http.Error(w, "failed to create post", http.StatusBadRequest)
+		// Извлекаем короткое сообщение
+		shortMsg := utils.ExtractErrorMessage(err)
+
+		// Записываем короткое сообщение в заголовок для логирования
+		w.Header().Set("X-Error-Message", shortMsg)
+
+		// Возвращаем короткое сообщение клиенту
+		http.Error(w, shortMsg, http.StatusBadRequest)
 		return
 	}
 

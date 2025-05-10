@@ -3,13 +3,13 @@ package post
 import (
 	"encoding/json"
 	"net/http"
+	"post-app/internal/infrastructure/transport/httplib/parser"
 	uc "post-app/internal/usecase/post"
 )
 
-// SaveAuthorRequest входные данные для сохранения поста из запроса.
-type SaveAuthorRequest struct {
+// SavePostRequest входные данные для сохранения поста из запроса.
+type SavePostRequest struct {
 	AuthorID int32  `json:"author_id"`
-	ID       int32  `json:"id"`
 	Title    string `json:"title"`
 	Content  string `json:"content"`
 }
@@ -21,22 +21,28 @@ type SavePostResponse struct {
 
 // SavePostHandler обработчик сохранения поста.
 func (h *Handler) SavePostHandler(w http.ResponseWriter, r *http.Request) {
-	var req SaveAuthorRequest
+	id, err := parser.ExtractIDFromRequest(r, "postID")
+	if err != nil {
+		http.Error(w, "incorrect post ID", http.StatusBadRequest)
+		return
+	}
+
+	var req SavePostRequest
 
 	// Читаем и парсим JSON
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+	if err = json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "wrong request body", http.StatusBadRequest)
 		return
 	}
 
 	in := uc.SaveInputDTO{
 		AuthorID: req.AuthorID,
-		ID:       req.ID,
+		ID:       id,
 		Title:    req.Title,
 		Content:  req.Content,
 	}
-	if err := h.saveUC.Execute(r.Context(), in); err != nil {
-		http.Error(w, "failed to save post", http.StatusBadRequest)
+	if err = h.saveUC.Execute(r.Context(), in); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -44,9 +50,9 @@ func (h *Handler) SavePostHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 
-	response := SavePostResponse{Message: "Автор успешно сохранен!"}
+	response := SavePostResponse{Message: "Пост успешно сохранен!"}
 
-	if err := json.NewEncoder(w).Encode(response); err != nil {
+	if err = json.NewEncoder(w).Encode(response); err != nil {
 		http.Error(w, "failed to encode response", http.StatusInternalServerError)
 		return
 	}

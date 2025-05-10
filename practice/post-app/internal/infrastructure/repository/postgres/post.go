@@ -30,7 +30,7 @@ func (r *PostRepository) Create(ctx context.Context, post *dom.Post) error {
 	`
 	_, err := r.pool.Exec(
 		ctx, query, post.AuthorID().Value(), post.Title().Value(), post.Content().Value(),
-		post.CreatedAt().Time().UTC(),
+		post.CreatedAt().Time().UTC().Unix(),
 	)
 	if err != nil {
 		return fmt.Errorf("PostRepository.Create: %w", err)
@@ -57,7 +57,7 @@ func (r *PostRepository) FindByID(ctx context.Context, id dom.PostID) (*dom.Post
 
 // FindByAuthorID находит все посты автора в базе данных по его идентификатору.
 func (r *PostRepository) FindByAuthorID(ctx context.Context, authorID vo.AuthorID) ([]*dom.Post, error) {
-	const query = `SELECT id, author_id, title, content, created_at FROM posts WHERE id=$1`
+	const query = `SELECT id, author_id, title, content, created_at FROM posts WHERE author_id=$1`
 
 	return r.fetchPosts(ctx, query, authorID.Value())
 }

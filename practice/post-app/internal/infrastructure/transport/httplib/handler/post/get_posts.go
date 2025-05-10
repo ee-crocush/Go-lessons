@@ -14,7 +14,7 @@ type GetAllPostsResponse struct {
 func (h *Handler) GetAllPostsHandler(w http.ResponseWriter, r *http.Request) {
 	posts, err := h.getAll.Execute(r.Context())
 	if err != nil {
-		http.Error(w, "failed to get posts", http.StatusBadRequest)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 

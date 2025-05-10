@@ -23,14 +23,14 @@ func main() {
 	db := memdb.New()
 	/*
 		// Реляционная БД PostgreSQL.
-		db2, err := postgres.New("postgres://postgres:postgres@server.domain/posts")
-		if err != nil {
-			log.Fatal(err)
+		db2, utils := postgres.New("postgres://postgres:postgres@server.domain/posts")
+		if utils != nil {
+			log.Fatal(utils)
 		}
 		// Документная БД MongoDB.
-		db3, err := mongo.New("mongodb://server.domain:27017/")
-		if err != nil {
-			log.Fatal(err)
+		db3, utils := mongo.New("mongodb://server.domain:27017/")
+		if utils != nil {
+			log.Fatal(utils)
 		}
 		_, _ = db2, db3
 	*/

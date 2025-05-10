@@ -3,13 +3,9 @@ package post
 import (
 	"encoding/json"
 	"net/http"
+	"post-app/internal/infrastructure/transport/httplib/parser"
 	uc "post-app/internal/usecase/post"
 )
-
-// DeletePostRequest входные данные для удаления поста из запроса.
-type DeletePostRequest struct {
-	ID int32 `json:"id"`
-}
 
 // DeletePostResponse выходные данные для удаления поста - ответ.
 type DeletePostResponse struct {
@@ -18,16 +14,14 @@ type DeletePostResponse struct {
 
 // DeletePostHandler обработчик удаления поста.
 func (h *Handler) DeletePostHandler(w http.ResponseWriter, r *http.Request) {
-	var req DeletePostRequest
-
-	// Читаем и парсим JSON
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, "wrong request body", http.StatusBadRequest)
+	id, err := parser.ExtractIDFromRequest(r, "postID")
+	if err != nil {
+		http.Error(w, "incorrect post ID", http.StatusBadRequest)
 		return
 	}
 
-	if err := h.deleteUC.Execute(r.Context(), uc.DeleteInputDTO{ID: req.ID}); err != nil {
-		http.Error(w, "failed to create post", http.StatusBadRequest)
+	if err = h.deleteUC.Execute(r.Context(), uc.DeleteInputDTO{ID: id}); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -39,7 +33,7 @@ func (h *Handler) DeletePostHandler(w http.ResponseWriter, r *http.Request) {
 		Message: "Пост успешно удален!",
 	}
 
-	if err := json.NewEncoder(w).Encode(response); err != nil {
+	if err = json.NewEncoder(w).Encode(response); err != nil {
 		http.Error(w, "failed to encode response", http.StatusInternalServerError)
 		return
 	}

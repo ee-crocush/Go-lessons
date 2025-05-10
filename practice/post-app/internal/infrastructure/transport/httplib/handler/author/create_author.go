@@ -36,7 +36,7 @@ func (h *Handler) CreateAuthorHandler(w http.ResponseWriter, r *http.Request) {
 		r.Context(), uc.CreateInputDTO{Name: req.Name},
 	)
 	if err != nil {
-		http.Error(w, "failed to create author", http.StatusBadRequest)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 

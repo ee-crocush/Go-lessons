@@ -4,6 +4,7 @@ package post
 import (
 	"context"
 	"fmt"
+	authordom "post-app/internal/domain/author"
 	dom "post-app/internal/domain/post"
 	"post-app/internal/domain/vo"
 )
@@ -22,12 +23,13 @@ type CreateContractUseCase interface {
 
 // CreateUseCase бизнес логика создания поста.
 type CreateUseCase struct {
-	repo dom.Creator
+	repo       dom.Creator
+	authorRepo authordom.Finder
 }
 
 // NewCreateUseCase конструктор бизнес логики создания поста.
-func NewCreateUseCase(repo dom.Creator) *CreateUseCase {
-	return &CreateUseCase{repo: repo}
+func NewCreateUseCase(repo dom.Creator, authorRepo authordom.Finder) *CreateUseCase {
+	return &CreateUseCase{repo: repo, authorRepo: authorRepo}
 }
 
 // Execute выполняет бизнес логику.
@@ -37,7 +39,12 @@ func (uc *CreateUseCase) Execute(ctx context.Context, in CreateInputDTO) error {
 		return fmt.Errorf("Post.CreateUseCase.Execute: %w", err)
 	}
 
-	post, err := dom.NewPost(authorID, in.Title, in.Content)
+	author, err := uc.authorRepo.FindByID(ctx, authorID)
+	if err != nil {
+		return fmt.Errorf("Post.CreateUseCase.Execute: %w", err)
+	}
+
+	post, err := dom.NewPost(author.ID(), in.Title, in.Content)
 	if err != nil {
 		return fmt.Errorf("Post.CreateUseCase.Execute: %w", err)
 	}

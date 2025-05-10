@@ -3,13 +3,9 @@ package author
 import (
 	"encoding/json"
 	"net/http"
+	"post-app/internal/infrastructure/transport/httplib/parser"
 	uc "post-app/internal/usecase/author"
 )
-
-// GetAuthorRequest входные данные для получения автора из запроса.
-type GetAuthorRequest struct {
-	ID int32 `json:"id"`
-}
 
 // GetAuthorDTO данные, которые вернем в ответе.
 type GetAuthorDTO struct {
@@ -24,19 +20,17 @@ type GetAuthorResponse struct {
 
 // GetAuthorHandler обработчик получения автора.
 func (h *Handler) GetAuthorHandler(w http.ResponseWriter, r *http.Request) {
-	var req GetAuthorRequest
-
-	// Читаем и парсим JSON
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, "wrong request body", http.StatusBadRequest)
+	id, err := parser.ExtractIDFromRequest(r, "authorID")
+	if err != nil {
+		http.Error(w, "incorrect author ID", http.StatusBadRequest)
 		return
 	}
 
 	output, err := h.getUC.Execute(
-		r.Context(), uc.GetInputDTO{ID: req.ID},
+		r.Context(), uc.GetInputDTO{ID: id},
 	)
 	if err != nil {
-		http.Error(w, "failed to get author", http.StatusBadRequest)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 

@@ -3,12 +3,12 @@ package author
 import (
 	"encoding/json"
 	"net/http"
+	"post-app/internal/infrastructure/transport/httplib/parser"
 	uc "post-app/internal/usecase/author"
 )
 
 // SaveAuthorRequest входные данные для сохранения автора из запроса.
 type SaveAuthorRequest struct {
-	ID   int32  `json:"id"`
 	Name string `json:"name"`
 }
 
@@ -27,14 +27,21 @@ type SaveAuthorResponse struct {
 func (h *Handler) SaveAuthorHandler(w http.ResponseWriter, r *http.Request) {
 	var req SaveAuthorRequest
 
+	id, err := parser.ExtractIDFromRequest(r, "authorID")
+	if err != nil {
+		http.Error(w, "incorrect author ID", http.StatusBadRequest)
+		return
+	}
+
 	// Читаем и парсим JSON
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+	if err = json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "wrong request body", http.StatusBadRequest)
 		return
 	}
 
-	if err := h.saveUC.Execute(r.Context(), uc.SaveInputDTO{ID: req.ID, Name: req.Name}); err != nil {
-		http.Error(w, "failed to save author", http.StatusBadRequest)
+	// Выполняем use-case с извлеченным ID и именем из запроса
+	if err = h.saveUC.Execute(r.Context(), uc.SaveInputDTO{ID: id, Name: req.Name}); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 

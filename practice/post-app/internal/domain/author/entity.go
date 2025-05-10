@@ -48,5 +48,11 @@ func (a *Author) SetID(id vo.AuthorID) { a.id = id }
 
 // AddPost добавляет новый пост к списку постов автора.
 func (a *Author) AddPost(post *post.Post) {
+	// Проверяем, существует ли уже такой пост
+	for _, existingPost := range a.posts {
+		if existingPost.ID() == post.ID() {
+			return
+		}
+	}
 	a.posts = append(a.posts, post)
 }

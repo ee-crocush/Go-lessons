@@ -9,7 +9,7 @@ import (
 )
 
 // Init инициализирует и возвращает новый экземпляр пула соединений PostgreSQL.
-func Init(cfg *config.Config) (*pgxpool.Pool, error) {
+func Init(cfg config.Config) (*pgxpool.Pool, error) {
 	dbURL := cfg.DB.DSN()
 
 	// Добавляем параметры подключения

@@ -10,7 +10,7 @@ import (
 )
 
 // Init инициализирует и возвращает клиент MongoDB и выбранную базу.
-func Init(cfg *config.Config) (*mongo.Client, *mongo.Database, error) {
+func Init(cfg config.Config) (*mongo.Client, *mongo.Database, error) {
 	uri := cfg.MongoDB.URI().String()
 
 	clientOpts := options.Client().
@@ -32,7 +32,7 @@ func Init(cfg *config.Config) (*mongo.Client, *mongo.Database, error) {
 		return nil, nil, fmt.Errorf("Init.MongoDB.Connect: %w", err)
 	}
 
-	defer client.Disconnect(context.Background())
+	//defer client.Disconnect(context.Background())
 
 	// Проверка соединения
 	if err = client.Ping(ctx, nil); err != nil {

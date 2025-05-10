@@ -1,3 +1,14 @@
+app:
+  name: PostApp
+  read_timeout: 10
+  write_timeout: 10
+  db_type: postgres
+
+http:
+  host: 0.0.0.0
+  port: ${HTTP_PORT}
+  enabled: true
+
 database:
   host: ${DB_HOST}
   port: ${DB_PORT}
@@ -18,4 +29,10 @@ mongodb:
   user: ${MONGO_USER}
   password: ${MONGO_PASSWORD}
   auth_source: ${MONGO_AUTH_SOURCE}
-  name: ${MONGO_DB_NAME}
+  database: ${MONGO_DB_NAME}
+  connect_timeout: 10s
+
+logging:
+  level: debug
+  format: json
+  enable_http_logs: true

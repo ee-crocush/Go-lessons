@@ -3,9 +3,7 @@ package post
 import (
 	"context"
 	"fmt"
-	authordom "post-app/internal/domain/author"
 	dom "post-app/internal/domain/post"
-	"post-app/internal/domain/vo"
 )
 
 // SaveInputDTO входные данные для Сохранения поста.
@@ -21,35 +19,36 @@ type SaveContractUseCase interface {
 	Execute(ctx context.Context, in SaveInputDTO) error
 }
 
+// postRepository - интерфейс агрегатор
+type postRepository interface {
+	dom.Finder
+	dom.Writer
+}
+
 // SaveUseCase бизнес логика Сохранения поста.
 type SaveUseCase struct {
-	repo       dom.Writer
-	authorRepo authordom.Finder
+	readRepo  dom.Finder
+	writeRepo dom.Writer
 }
 
 // NewSaveUseCase конструктор бизнес логики Сохранения поста.
-func NewSaveUseCase(repo dom.Writer, authorRepo authordom.Finder) *SaveUseCase {
-	return &SaveUseCase{repo: repo, authorRepo: authorRepo}
+func NewSaveUseCase(repo postRepository) *SaveUseCase {
+	return &SaveUseCase{readRepo: repo, writeRepo: repo}
 }
 
 // Execute выполняет бизнес логику.
 func (uc *SaveUseCase) Execute(ctx context.Context, in SaveInputDTO) error {
-	authorID, err := vo.NewAuthorID(in.ID)
-	if err != nil {
-		return fmt.Errorf("Post.SaveUseCase.Execute: %w", err)
-	}
-
-	author, err := uc.authorRepo.FindByID(ctx, authorID)
-	if err != nil {
-		return fmt.Errorf("Post.SaveUseCase.Execute: %w", err)
-	}
-
 	postID, err := dom.NewPostID(in.ID)
 	if err != nil {
 		return fmt.Errorf("Post.SaveUseCase.Execute: %w", err)
 	}
 
-	postTile, err := dom.NewPostTitle(in.Title)
+	findedPost, err := uc.readRepo.FindByID(ctx, postID)
+	if err != nil {
+		return fmt.Errorf("Post.SaveUseCase.Execute: %w", err)
+	}
+
+	postTitle, err := dom.NewPostTitle(in.Title)
 	if err != nil {
 		return fmt.Errorf("Post.SaveUseCase.Execute: %w", err)
 	}
@@ -59,9 +58,9 @@ func (uc *SaveUseCase) Execute(ctx context.Context, in SaveInputDTO) error {
 		return fmt.Errorf("Post.SaveUseCase.Execute: %w", err)
 	}
 
-	post := dom.RehydratePost(postID, author.ID(), postTile, postContent, nil)
+	post := dom.RehydratePost(postID, findedPost.AuthorID(), postTitle, postContent, findedPost.CreatedAt())
 
-	err = uc.repo.Save(ctx, post)
+	err = uc.writeRepo.Save(ctx, post)
 	if err != nil {
 		return fmt.Errorf("Post.SaveUseCase.Execute: %w", err)
 	}

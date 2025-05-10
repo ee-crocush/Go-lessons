@@ -3,13 +3,9 @@ package post
 import (
 	"encoding/json"
 	"net/http"
+	"post-app/internal/infrastructure/transport/httplib/parser"
 	uc "post-app/internal/usecase/post"
 )
-
-// GetPostByAuthorIDRequest входные данные для получения постов по ID автора - запрос.
-type GetPostByAuthorIDRequest struct {
-	AuthorID int32 `json:"author_id"`
-}
 
 // GetPostByAuthorIDResponse выходные данные для получения постов по ID автора - ответ.
 type GetPostByAuthorIDResponse struct {
@@ -18,17 +14,15 @@ type GetPostByAuthorIDResponse struct {
 
 // GetPostsByAuthorIDHandler обработчик получения постов.
 func (h *Handler) GetPostsByAuthorIDHandler(w http.ResponseWriter, r *http.Request) {
-	var req GetPostByAuthorIDRequest
-
-	// Читаем и парсим JSON
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, "wrong request body", http.StatusBadRequest)
+	id, err := parser.ExtractIDFromRequest(r, "authorID")
+	if err != nil {
+		http.Error(w, "incorrect authorID", http.StatusBadRequest)
 		return
 	}
 
-	posts, err := h.getByAuthorID.Execute(r.Context(), uc.GetByAuthorIDInputDTO{AuthorID: req.AuthorID})
+	posts, err := h.getByAuthorID.Execute(r.Context(), uc.GetByAuthorIDInputDTO{AuthorID: id})
 	if err != nil {
-		http.Error(w, "failed to get posts by author id", http.StatusBadRequest)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 

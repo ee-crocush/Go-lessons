@@ -3,13 +3,9 @@ package post
 import (
 	"encoding/json"
 	"net/http"
+	"post-app/internal/infrastructure/transport/httplib/parser"
 	uc "post-app/internal/usecase/post"
 )
-
-// GetPostByIDRequest входные данные для получения поста по его ID из запроса.
-type GetPostByIDRequest struct {
-	ID int32 `json:"id"`
-}
 
 // GetPostByIDResponse выходные данные для получения поста по его ID - ответ.
 type GetPostByIDResponse struct {
@@ -19,17 +15,15 @@ type GetPostByIDResponse struct {
 
 // GetPostByIDHandler обработчик получения поста по его ID.
 func (h *Handler) GetPostByIDHandler(w http.ResponseWriter, r *http.Request) {
-	var req GetPostByIDRequest
-
-	// Читаем и парсим JSON
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, "wrong request body", http.StatusBadRequest)
+	id, err := parser.ExtractIDFromRequest(r, "postID")
+	if err != nil {
+		http.Error(w, "incorrect post ID", http.StatusBadRequest)
 		return
 	}
 
-	post, err := h.getByIDUC.Execute(r.Context(), uc.GetByIDInputDTO{ID: req.ID})
+	output, err := h.getByIDUC.Execute(r.Context(), uc.GetByIDInputDTO{ID: id})
 	if err != nil {
-		http.Error(w, "failed to get post", http.StatusBadRequest)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -37,7 +31,7 @@ func (h *Handler) GetPostByIDHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 
-	response := MapGetByIDUseCaseToRequest(post)
+	response := MapGetByIDUseCaseToRequest(output)
 
 	if err = json.NewEncoder(w).Encode(response); err != nil {
 		http.Error(w, "failed to encode response", http.StatusInternalServerError)

@@ -141,9 +141,9 @@ func GetAllTasks(ctx context.Context, pool *pgxpool.Pool) (
 //	in := uctask.FindAllByAuthorIDDTO{
 //		AuthorID: authorID,
 //	}
-//	out, err := uc.Execute(ctx, in)
-//	if err != nil {
-//		return uctask.FindAllByAuthorIDOutputDTO{}, err
+//	out, utils := uc.Execute(ctx, in)
+//	if utils != nil {
+//		return uctask.FindAllByAuthorIDOutputDTO{}, utils
 //	}
 //	return out, nil
 //}

@@ -141,8 +141,8 @@ func main() {
 	}
 
 	tree.ShowWide()
-	// if err := tree.Delete(50); err != nil {
-	// 	fmt.Println(err)
+	// if utils := tree.Delete(50); utils != nil {
+	// 	fmt.Println(utils)
 	// } else {
 	// 	tree.ShowWide()
 	// }

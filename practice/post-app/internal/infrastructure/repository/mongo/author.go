@@ -77,7 +77,12 @@ func (r *AuthorRepository) FindByIDs(ctx context.Context, ids []vo.AuthorID) ([]
 	ctx, cancel := context.WithTimeout(ctx, r.timeout)
 	defer cancel()
 
-	cursor, err := r.collection.Find(ctx, bson.M{"_id": bson.M{"$in": ids}})
+	var authorsIDs []int32
+	for _, id := range ids {
+		authorsIDs = append(authorsIDs, id.Value())
+	}
+
+	cursor, err := r.collection.Find(ctx, bson.M{"_id": bson.M{"$in": authorsIDs}})
 	if err != nil {
 		return nil, fmt.Errorf("AuthorRepository.FindAll: %w", err)
 	}

@@ -39,5 +39,5 @@ func MapRowToPost(row PostRow) (*dom.Post, error) {
 
 	createdAt := dom.FromUnixSeconds(row.CreatedAt)
 
-	return dom.RehydratePost(id, authorID, title, content, &createdAt), nil
+	return dom.RehydratePost(id, authorID, title, content, createdAt), nil
 }

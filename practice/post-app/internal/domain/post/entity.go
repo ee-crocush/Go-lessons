@@ -52,14 +52,14 @@ func (p *Post) CreatedAt() Timestamp { return p.createdAt }
 
 // RehydratePost — вспомогательный конструктор для «восстановления» сущности из БД.
 func RehydratePost(
-	id PostID, authorID vo.AuthorID, title PostTitle, content PostContent, createdAt *Timestamp,
+	id PostID, authorID vo.AuthorID, title PostTitle, content PostContent, createdAt Timestamp,
 ) *Post {
 	return &Post{
 		id:        id,
 		authorID:  authorID,
 		title:     title,
 		content:   content,
-		createdAt: *createdAt,
+		createdAt: createdAt,
 	}
 }
 
